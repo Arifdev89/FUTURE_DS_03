@@ -1,0 +1,50 @@
+# Set up the plotting style
+plt.style.use('default')
+fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+fig.suptitle('Student Feedback Analysis Dashboard', fontsize=16, fontweight='bold')
+
+# Chart 1: Average Ratings by Aspect (Bar Chart)
+axes[0, 0].barh(range(len(average_ratings)), average_ratings.values, color='skyblue')
+axes[0, 0].set_yticks(range(len(average_ratings)))
+axes[0, 0].set_yticklabels(average_ratings.index)
+axes[0, 0].set_xlabel('Average Rating (out of 10)')
+axes[0, 0].set_title('Average Ratings by Aspect')
+axes[0, 0].axvline(x=overall_satisfaction, color='red', linestyle='--', label=f'Overall Avg: {overall_satisfaction:.2f}')
+axes[0, 0].legend()
+
+# Chart 2: Rating Distribution for Key Aspects
+aspects_to_plot = ['Knowledgeable', 'Clear_Explanation', 'Doubt_Solving', 'Recommendation']
+for i, aspect in enumerate(aspects_to_plot):
+    axes[0, 1].hist(df_clean[aspect], bins=10, alpha=0.6, label=aspect, density=True)
+axes[0, 1].set_xlabel('Rating (1-10)')
+axes[0, 1].set_ylabel('Density')
+axes[0, 1].set_title('Rating Distribution for Key Aspects')
+axes[0, 1].legend()
+axes[0, 1].set_xlim(1, 10)
+
+# Chart 3: Correlation Heatmap
+correlation_matrix = df_clean.drop('Student ID', axis=1).corr()
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', center=0, ax=axes[1, 0])
+axes[1, 0].set_title('Correlation Between Different Aspects')
+
+# Chart 4: Satisfaction Categories
+def categorize_satisfaction(row):
+    avg = row.mean()
+    if avg >= 8:
+        return 'Highly Satisfied'
+    elif avg >= 6:
+        return 'Satisfied'
+    elif avg >= 4:
+        return 'Neutral'
+    else:
+        return 'Dissatisfied'
+
+df_clean['Satisfaction_Level'] = df_clean.drop(['Student ID', 'Satisfaction_Level'], errors='ignore', axis=1).apply(categorize_satisfaction, axis=1)
+satisfaction_counts = df_clean['Satisfaction_Level'].value_counts()
+
+axes[1, 1].pie(satisfaction_counts.values, labels=satisfaction_counts.index, autopct='%1.1f%%', 
+               colors=['#4CAF50', '#8BC34A', '#FFC107', '#F44336'])
+axes[1, 1].set_title('Overall Student Satisfaction Distribution')
+
+plt.tight_layout()
+plt.show()
