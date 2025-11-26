@@ -1,0 +1,84 @@
+# Elegant single-page infographic style
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(18, 12))
+
+# Color scheme
+colors = ['#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51']
+
+# 1. Enhanced Bar Chart with gradients
+aspects = average_ratings.index
+ratings = average_ratings.values
+
+# Create gradient bars
+bars = ax1.barh(aspects, ratings, color=colors[0], alpha=0.8, height=0.6)
+for i, (bar, rating) in enumerate(zip(bars, ratings)):
+    # Add gradient effect
+    gradient = np.linspace(0, 1, 100).reshape(1, -1)
+    bar.set_hatch('///')
+    # Add value labels
+    ax1.text(bar.get_width() + 0.1, bar.get_y() + bar.get_height()/2, 
+            f'{rating:.2f}', ha='left', va='center', fontweight='bold')
+
+ax1.set_xlim(0, 10)
+ax1.set_title('Average Ratings by Teaching Aspect', fontsize=16, fontweight='bold', pad=20)
+ax1.grid(axis='x', alpha=0.3)
+
+# 2. Enhanced Donut Chart with annotations
+wedges, texts, autotexts = ax2.pie(satisfaction_counts.values, 
+                                  labels=satisfaction_counts.index,
+                                  colors=colors,
+                                  autopct='%1.1f%%',
+                                  startangle=90,
+                                  wedgeprops=dict(width=0.5, edgecolor='w'))
+
+# Beautify
+for autotext in autotexts:
+    autotext.set_color('white')
+    autotext.set_fontweight('bold')
+    autotext.set_fontsize(11)
+
+centre_circle = plt.Circle((0,0),0.30,fc='white')
+ax2.add_artist(centre_circle)
+ax2.text(0, 0, f'Overall\n{overall_satisfaction:.1f}/10', ha='center', va='center', 
+         fontsize=12, fontweight='bold')
+ax2.set_title('Student Satisfaction Levels', fontsize=16, fontweight='bold')
+
+# 3. Box plot for distribution
+box_data = [df_clean[col] for col in average_ratings.index]
+box_plot = ax3.boxplot(box_data, labels=average_ratings.index, patch_artist=True)
+
+# Color the boxes
+for patch, color in zip(box_plot['boxes'], colors * 2):
+    patch.set_facecolor(color)
+    patch.set_alpha(0.7)
+
+ax3.set_xticklabels(average_ratings.index, rotation=45, ha='right')
+ax3.set_ylabel('Rating Score')
+ax3.set_title('Rating Distribution Across All Aspects', fontsize=16, fontweight='bold')
+ax3.grid(True, alpha=0.3)
+
+# 4. Stacked bar chart for rating categories
+def get_rating_category_counts():
+    rating_categories = {'Low (1-4)': 0, 'Medium (5-7)': 0, 'High (8-10)': 0}
+    for aspect in average_ratings.index:
+        low = ((df_clean[aspect] >= 1) & (df_clean[aspect] <= 4)).sum()
+        medium = ((df_clean[aspect] >= 5) & (df_clean[aspect] <= 7)).sum()
+        high = ((df_clean[aspect] >= 8) & (df_clean[aspect] <= 10)).sum()
+        rating_categories['Low (1-4)'] += low
+        rating_categories['Medium (5-7)'] += medium
+        rating_categories['High (8-10)'] += high
+    return rating_categories
+
+rating_cats = get_rating_category_counts()
+cat_colors = ['#e76f51', '#e9c46a', '#2a9d8f']
+
+bars = ax4.bar(rating_cats.keys(), rating_cats.values(), color=cat_colors, alpha=0.8)
+ax4.set_title('Overall Rating Category Distribution', fontsize=16, fontweight='bold')
+
+# Add value labels on bars
+for bar, value in zip(bars, rating_cats.values()):
+    height = bar.get_height()
+    ax4.text(bar.get_x() + bar.get_width()/2., height + 50,
+            f'{value:,}', ha='center', va='bottom', fontweight='bold')
+
+plt.tight_layout()
+plt.show()
