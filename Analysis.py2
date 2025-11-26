@@ -1,0 +1,78 @@
+# Professional KPI-style dashboard
+fig = plt.figure(figsize=(18, 10))
+fig.patch.set_facecolor('#f8f9fa')
+
+# Create a grid specification
+gs = fig.add_gridspec(2, 4, hspace=0.4, wspace=0.3)
+
+# KPI 1: Overall Satisfaction
+ax1 = fig.add_subplot(gs[0, 0])
+ax1.text(0.5, 0.7, f'{overall_satisfaction:.1f}', ha='center', va='center', 
+         fontsize=32, fontweight='bold', color='#2E8B57')
+ax1.text(0.5, 0.4, 'Overall Score', ha='center', va='center', 
+         fontsize=14, style='italic')
+ax1.text(0.5, 0.2, '/10', ha='center', va='center', fontsize=12)
+ax1.set_xlim(0, 1)
+ax1.set_ylim(0, 1)
+ax1.axis('off')
+
+# KPI 2: Response Rate (simulated)
+ax2 = fig.add_subplot(gs[0, 1])
+ax2.text(0.5, 0.7, f'{len(df_clean)}', ha='center', va='center', 
+         fontsize=32, fontweight='bold', color='#1E90FF')
+ax2.text(0.5, 0.4, 'Total Responses', ha='center', va='center', 
+         fontsize=14, style='italic')
+ax2.text(0.5, 0.2, 'students', ha='center', va='center', fontsize=12)
+ax2.set_xlim(0, 1)
+ax2.set_ylim(0, 1)
+ax2.axis('off')
+
+# KPI 3: Top Aspect
+ax3 = fig.add_subplot(gs[0, 2])
+top_aspect = average_ratings.index[0]
+top_rating = average_ratings.iloc[0]
+ax3.text(0.5, 0.7, f'{top_rating:.1f}', ha='center', va='center', 
+         fontsize=32, fontweight='bold', color='#32CD32')
+ax3.text(0.5, 0.4, 'Top Aspect', ha='center', va='center', 
+         fontsize=14, style='italic')
+ax3.text(0.5, 0.2, top_aspect[:15] + '...', ha='center', va='center', fontsize=10)
+ax3.set_xlim(0, 1)
+ax3.set_ylim(0, 1)
+ax3.axis('off')
+
+# KPI 4: Improvement Area
+ax4 = fig.add_subplot(gs[0, 3])
+bottom_aspect = average_ratings.index[-1]
+bottom_rating = average_ratings.iloc[-1]
+ax4.text(0.5, 0.7, f'{bottom_rating:.1f}', ha='center', va='center', 
+         fontsize=32, fontweight='bold', color='#FF4500')
+ax4.text(0.5, 0.4, 'Needs Improvement', ha='center', va='center', 
+         fontsize=14, style='italic')
+ax4.text(0.5, 0.2, bottom_aspect[:15] + '...', ha='center', va='center', fontsize=10)
+ax4.set_xlim(0, 1)
+ax4.set_ylim(0, 1)
+ax4.axis('off')
+
+# Main visualization: Lollipop chart
+ax5 = fig.add_subplot(gs[1, :])
+aspects = average_ratings.index
+ratings = average_ratings.values
+
+# Create lollipop chart
+colors = ['#FF6B6B' if x < 6 else '#4ECDC4' if x < 8 else '#45B7D1' for x in ratings]
+ax5.hlines(y=range(len(aspects)), xmin=0, xmax=ratings, color=colors, alpha=0.8, linewidth=5)
+ax5.scatter(ratings, range(len(aspects)), color=colors, s=200, alpha=0.8, edgecolors='white', linewidth=2)
+
+# Customize
+ax5.set_yticks(range(len(aspects)))
+ax5.set_yticklabels(aspects)
+ax5.set_xlabel('Average Rating (1-10)')
+ax5.set_title('Detailed Aspect Performance Analysis', fontsize=16, fontweight='bold')
+ax5.grid(True, alpha=0.3)
+
+# Add rating values
+for i, rating in enumerate(ratings):
+    ax5.text(rating + 0.2, i, f'{rating:.2f}', va='center', fontweight='bold')
+
+plt.tight_layout()
+plt.show()
